@@ -112,6 +112,46 @@ exports.addPatient = functions.https.onRequest(async (req, res) => {
 })
 
 
+exports.updatePatient = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed: use POST')
+  }
+
+  const patientId = req.query.id || req.body.id
+  const updateData = req.body
+
+  if (!patientId) {
+    return res.status(400).send('Missing patient ID')
+  }
+
+  // Don't allow updating the ID field itself
+  delete updateData.id
+
+  // Add auto timestamp update if not provided
+  if (!updateData.last_record_update) {
+    updateData.last_record_update = new Date().toISOString()
+  }
+
+  try {
+    const docRef = admin.firestore().collection('patients').doc(patientId)
+    const doc = await docRef.get()
+
+    if (!doc.exists) {
+      return res.status(404).send('Patient not found')
+    }
+
+    await docRef.update(updateData)
+    res.status(200).json({ message: 'Patient record updated', id: patientId })
+  } catch (error) {
+    console.error('Error updating patient:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
+
+
+
+
 
 
 
