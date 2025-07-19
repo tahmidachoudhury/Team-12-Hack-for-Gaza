@@ -10,47 +10,6 @@
 const { setGlobalOptions } = require("firebase-functions")
 const { onRequest } = require("firebase-functions/https")
 const logger = require("firebase-functions/logger")
-const patients = [
-  {
-    id: 374927,
-    name: "John Doe",
-    DOB: "1985-04-12",
-    address: "123 Maple Street, Springfield, IL 62704",
-    phone_number: "+1-312-555-0178",
-    number_of_previous_visits: 5,
-    number_of_previous_admissions: 2,
-    date_of_last_admission: "2024-12-05",
-    patient_notes:
-      "Patient has a history of hypertension. Last visit was for routine check-up. No major complaints.",
-    last_record_update: "2025-06-15T10:30:00Z",
-  },
-  {
-    id: 378465,
-    name: "Maria Gonzales",
-    DOB: "1990-09-28",
-    address: "789 Elm Avenue, Dallas, TX 75201",
-    phone_number: "+1-972-555-0345",
-    number_of_previous_visits: 12,
-    number_of_previous_admissions: 1,
-    date_of_last_admission: "2023-11-21",
-    patient_notes:
-      "Diagnosed with Type 2 Diabetes. Monitoring blood sugar levels. Prescribed Metformin.",
-    last_record_update: "2025-07-01T14:15:00Z",
-  },
-  {
-    id: 274920,
-    name: "Samuel Lee",
-    DOB: "1978-02-06",
-    address: "456 Oak Blvd, San Francisco, CA 94102",
-    phone_number: "+1-415-555-0890",
-    number_of_previous_visits: 9,
-    number_of_previous_admissions: 3,
-    date_of_last_admission: "2025-03-18",
-    patient_notes:
-      "Patient recovering from knee surgery. Attending physical therapy sessions. Healing as expected.",
-    last_record_update: "2025-07-18T09:45:00Z",
-  },
-]
 
 const admin = require("firebase-admin")
 const functions = require("firebase-functions")
@@ -58,23 +17,12 @@ if (!admin.apps.length) {
   admin.initializeApp()
 }
 
-/**
- * Dummy endpoint:
- * GET https://<region>-<project-id>.cloudfunctions.net/getPatient
- * Always returns the same mock patient record.
- */
-exports.getPatient = functions.https.onRequest((_req, res) => {
-  res.json(patients)
-  //   res.json({
-  //     id: "123",
-  //     name: "Ahmed",
-  //     allergy: "Penicillin",
-  //   })
-})
-
 const db = admin.firestore()
 
-exports.partialSearchUsingFirestore = functions.https.onRequest(
+//api endpoint is https://partialsearchusingpatientname-uob3euoulq-uc.a.run.app
+// using POST method, you need name as a parameter, or part of a name (case sensitive)
+// it will return all patients with the name starting with the parameter you entered
+exports.partialSearchUsingPatientName = functions.https.onRequest(
   async (req, res) => {
     const queryName = req.query.name
 
@@ -106,37 +54,37 @@ exports.partialSearchUsingFirestore = functions.https.onRequest(
     }
   }
 )
+//-------------------------------------------------------------------------------------
 
-exports.getPatientUsingFirestore = functions.https.onRequest(
-  async (req, res) => {
-    try {
-      const id = req.query.id
+// api endpoint is https://getpatientwithid-uob3euoulq-uc.a.run.app
+// using POST method, you need patient id as a paramter
+// it will return the full patient object with the id
+exports.getPatientWithID = functions.https.onRequest(async (req, res) => {
+  try {
+    const id = req.query.id
 
-      if (!id) {
-        return res.status(400).json({ error: "Missing patient ID" })
-      }
-
-      const doc = await db.collection("patients").doc(id).get()
-
-      if (!doc.exists) {
-        return res.status(404).json({ error: "Patient not found" })
-      }
-
-      res.json({ id: doc.id, ...doc.data() })
-    } catch (err) {
-      console.error("Error fetching patient:", err)
-      res.status(500).json({ error: "Internal Server Error" })
+    if (!id) {
+      return res.status(400).json({ error: "Missing patient ID" })
     }
-  }
-)
 
-exports.partialSearchPatientName = functions.https.onRequest((_req, res) => {
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.startsWith(_req.query.name)
-  )
-  console.log(JSON.stringify(filteredPatients))
-  res.json(filteredPatients)
+    const doc = await db.collection("patients").doc(id).get()
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: "Patient not found" })
+    }
+
+    res.json({ id: doc.id, ...doc.data() })
+  } catch (err) {
+    console.error("Error fetching patient:", err)
+    res.status(500).json({ error: "Internal Server Error" })
+  }
 })
+//-------------------------------------------------------------------------------------
+
+// api endpoint is https://updatepatient-uob3euoulq-uc.a.run.app/
+// using POST method, you need patient id as a paramter
+// the body of the request should be the patient object with whatever properties you
+// want to update
 
 exports.updatePatient = functions.https.onRequest(async (req, res) => {
   if (req.method !== "POST") {
@@ -173,6 +121,30 @@ exports.updatePatient = functions.https.onRequest(async (req, res) => {
     res.status(500).send("Internal Server Error")
   }
 })
+//-------------------------------------------------------------------------------------
+
+// api endpoint is https://addpatient-uob3euoulq-uc.a.run.app
+// using POST method, you need a minimum of 3 parameters: "id" (6 digits), "name", "DOB"
+// the body of the request should follow this format: optional to fill everything
+// const newPatient = {
+//   id,
+//   name,
+//   DOB: dob,
+//   gender: "" || "Unknown",
+//   blood_type: "" || "Unknown",
+//   address: "" || null,
+//   phone_number: "" || null,
+//   allergies: [""] || [],
+//   chronic_conditions: [""] || [],
+//   current_medications: [{}] || [],
+//   do_not_resuscitate: "" false,
+//   number_of_previous_visits: int || 0,
+//   number_of_previous_admissions: int || 0,
+//   date_of_last_admission: "" || null,
+//   last_diagnosis: "" || "",
+//   notes: "" || "",
+//   last_record_update: "" || new Date().toISOString(),
+// }
 
 exports.addPatient = functions.https.onRequest(async (req, res) => {
   if (req.method !== "POST") {
@@ -183,36 +155,52 @@ exports.addPatient = functions.https.onRequest(async (req, res) => {
     id,
     name,
     dob,
+    gender,
+    blood_type,
     address,
     phone_number,
+    allergies,
+    chronic_conditions,
+    current_medications,
+    do_not_resuscitate,
     number_of_previous_visits,
     number_of_previous_admissions,
+    date_of_last_admission,
+    last_diagnosis,
     patient_notes,
     last_record_update,
   } = req.body
 
-  // Basic validation
-  if (!name || !dob) {
-    return res.status(400).send('Missing required fields: "name" and "dob"')
+  if (!id || !name || !dob) {
+    return res
+      .status(400)
+      .send('Missing required fields: "id", "name", and "dob"')
   }
 
   try {
     const newPatient = {
       id,
       name,
-      dob,
+      DOB: dob,
+      gender: req.body.gender || "Unknown",
+      blood_type: req.body.blood_type || "Unknown",
       address: address || null,
       phone_number: phone_number || null,
+      allergies: req.body.allergies || [],
+      chronic_conditions: req.body.chronic_conditions || [],
+      current_medications: req.body.current_medications || [],
+      do_not_resuscitate: req.body.do_not_resuscitate || false,
       number_of_previous_visits: number_of_previous_visits || 0,
       number_of_previous_admissions: number_of_previous_admissions || 0,
-      patient_notes: patient_notes || "",
+      date_of_last_admission: req.body.date_of_last_admission || null,
+      last_diagnosis: req.body.last_diagnosis || "",
+      notes: patient_notes || "",
       last_record_update: last_record_update || new Date().toISOString(),
     }
 
-    const docRef = await admin
-      .firestore()
-      .collection("patients")
-      .add(newPatient)
+    const docRef = admin.firestore().collection("patients").doc(String(id))
+    await docRef.set(newPatient)
+
     res
       .status(201)
       .json({ message: "Patient added successfully", id: docRef.id })
@@ -221,51 +209,7 @@ exports.addPatient = functions.https.onRequest(async (req, res) => {
     res.status(500).send("Internal Server Error")
   }
 })
-
-/**
- * Another example endpoint:
- * GET https://<region>-<project-id>.cloudfunctions.net/listPatients
- * Returns an array of two hard-coded patients.
- */
-exports.listPatients = functions.https.onRequest((_req, res) => {
-  res.json([
-    { id: "123", name: "Ahmed", allergy: "Penicillin" },
-    { id: "456", name: "Fatima", allergy: "None" },
-  ])
-})
-
-exports.searchPatientsByNameAndDOB = functions.https.onRequest(
-  async (req, res) => {
-    const name = req.query.name
-    const dob = req.query.dob
-
-    if (!name || !dob) {
-      return res.status(400).send('Missing "name" or "dob" query parameters')
-    }
-
-    try {
-      const snapshot = await admin
-        .firestore()
-        .collection("patients")
-        .where("name", "==", name)
-        .where("dob", "==", dob)
-        .get()
-
-      if (snapshot.empty) {
-        return res.status(404).send("No matching patients found")
-      }
-
-      const patients = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-      res.status(200).json(patients)
-    } catch (error) {
-      console.error("Error querying patients:", error)
-      res.status(500).send(error.message)
-    }
-  }
-)
+//-------------------------------------------------------------------------------------
 
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
