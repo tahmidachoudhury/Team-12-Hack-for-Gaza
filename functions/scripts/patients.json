@@ -1,5 +1,6 @@
 [
   {
+    "id": 374927,
     "name": "John Doe",
     "DOB": "1985-04-12",
     "address": "123 Maple Street, Springfield, IL 62704",
@@ -11,6 +12,7 @@
     "last_record_update": "2025-06-15T10:30:00Z"
   },
   {
+    "id": 378465,
     "name": "Maria Gonzales",
     "DOB": "1990-09-28",
     "address": "789 Elm Avenue, Dallas, TX 75201",
@@ -22,6 +24,7 @@
     "last_record_update": "2025-07-01T14:15:00Z"
   },
   {
+    "id": 274920,
     "name": "Samuel Lee",
     "DOB": "1978-02-06",
     "address": "456 Oak Blvd, San Francisco, CA 94102",
