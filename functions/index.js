@@ -74,7 +74,7 @@ exports.addPatient = functions.https.onRequest(async (req, res) => {
   }
 
   const {
-	id,
+    id,
     name,
     dob,
     address,
@@ -92,7 +92,7 @@ exports.addPatient = functions.https.onRequest(async (req, res) => {
 
   try {
     const newPatient = {
-	  id,
+      id,
       name,
       dob,
       address: address || null,
