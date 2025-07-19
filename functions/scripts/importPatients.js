@@ -1,11 +1,13 @@
-// functions/scripts/importPatients.js  (now valid ESM)
-import admin from "firebase-admin"
-import fs from "fs"
-import { createRequire } from "module"
-const require = createRequire(import.meta.url) // to load JSON
+const admin = require("firebase-admin")
+const fs = require("fs")
 
+// Path to your downloaded service account key
 const serviceAccount = require("../../serviceAccount.json")
 
+// Path to your patients JSON file
+const patients = JSON.parse(fs.readFileSync("./patients.json", "utf8"))
+
+// Initialise Firebase Admin SDK with your key
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -14,35 +16,26 @@ if (!admin.apps.length) {
 }
 
 const db = admin.firestore()
-const patients = JSON.parse(
-  fs.readFileSync(new URL("./patients.json", import.meta.url), "utf8")
-)
 
-const chunkSize = 500
-
+// Seed Firestore with patients
 async function seedPatients() {
-  try {
-    for (let i = 0; i < patients.length; i += chunkSize) {
-      const batch = db.batch()
+  const batch = db.batch() // For efficiency
+  const collection = db.collection("patients")
 
-      patients.slice(i, i + chunkSize).forEach((p) => {
-        const ref = db.collection("patients").doc(String(p.id))
-        batch.set(ref, p)
-      })
+  patients.forEach((patient) => {
+    const docRef = collection.doc(String(patient.id)) // use patient.id as document ID
+    batch.set(docRef, {
+      ...patient,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    })
+  })
 
-      await batch.commit()
-      console.log(
-        `Imported ${Math.min(i + chunkSize, patients.length)} / ${
-          patients.length
-        }`
-      )
-    }
-    console.log("✅  Import complete")
-    process.exit(0)
-  } catch (err) {
-    console.error("❌ Import failed:", err)
-    process.exit(1)
-  }
+  await batch.commit()
+  console.log(`✅ ${patients.length} patients seeded to Firestore!`)
+  process.exit(0)
 }
 
-seedPatients()
+seedPatients().catch((err) => {
+  console.error("❌ Failed to seed:", err)
+  process.exit(1)
+})

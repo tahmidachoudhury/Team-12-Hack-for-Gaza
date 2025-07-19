@@ -1,0 +1,109 @@
+[
+  {
+    "id": 374928,
+    "name": "Yaacub Hassan",
+    "DOB": "1991-07-23",
+    "gender": "Male",
+    "blood_type": "A+",
+    "address": "55 Cedar Avenue, Bradford, BD7 1DP",
+    "phone_number": "+44-7456-123456",
+    "allergies": ["None"],
+    "chronic_conditions": ["Migraines"],
+    "current_medications": [],
+    "do_not_resuscitate": false,
+    "number_of_previous_visits": 3,
+    "number_of_previous_admissions": 1,
+    "date_of_last_admission": "2023-11-14",
+    "last_diagnosis": "Migraine",
+    "notes": "CT scan scheduled. Advised to monitor blood pressure.",
+    "last_record_update": "2025-06-10T14:45:00Z"
+  },
+  {
+    "id": 374929,
+    "name": "Yasmeen Chowdhury",
+    "DOB": "2002-01-15",
+    "gender": "Female",
+    "blood_type": "O+",
+    "address": "19 Elm Street, Tower Hamlets, London E1 5QR",
+    "phone_number": "+44-7900-998877",
+    "allergies": ["Pollen"],
+    "chronic_conditions": ["Asthma"],
+    "current_medications": [
+      {
+        "name": "Salbutamol Inhaler",
+        "dose": "100mcg",
+        "frequency": "2x daily"
+      }
+    ],
+    "do_not_resuscitate": false,
+    "number_of_previous_visits": 7,
+    "number_of_previous_admissions": 0,
+    "date_of_last_admission": null,
+    "last_diagnosis": "Seasonal allergies",
+    "notes": "Asthmatic. Uses inhaler regularly. Last visit was for seasonal allergies.",
+    "last_record_update": "2025-06-13T09:22:00Z"
+  },
+  {
+    "id": 374930,
+    "name": "Yannick Kamara",
+    "DOB": "1978-12-02",
+    "gender": "Male",
+    "blood_type": "B+",
+    "address": "301 Oak Crescent, Birmingham, B12 9LN",
+    "phone_number": "+44-7311-445566",
+    "allergies": ["None"],
+    "chronic_conditions": ["Type 2 Diabetes"],
+    "current_medications": [
+      { "name": "Insulin", "dose": "Variable", "frequency": "As prescribed" }
+    ],
+    "do_not_resuscitate": false,
+    "number_of_previous_visits": 12,
+    "number_of_previous_admissions": 4,
+    "date_of_last_admission": "2024-09-30",
+    "last_diagnosis": "Type 2 Diabetes",
+    "notes": "Requires regular insulin checks and dietary support.",
+    "last_record_update": "2025-06-14T16:00:00Z"
+  },
+  {
+    "id": 374931,
+    "name": "Yacub Abdi",
+    "DOB": "1999-03-05",
+    "gender": "Male",
+    "blood_type": "O-",
+    "address": "82 Willow Drive, Manchester M13 0PL",
+    "phone_number": "+44-7788-112233",
+    "allergies": ["None"],
+    "chronic_conditions": [],
+    "current_medications": [
+      { "name": "Paracetamol", "dose": "500mg", "frequency": "As needed" }
+    ],
+    "do_not_resuscitate": false,
+    "number_of_previous_visits": 2,
+    "number_of_previous_admissions": 1,
+    "date_of_last_admission": "2024-04-18",
+    "last_diagnosis": "Fractured ankle",
+    "notes": "Suffered a broken ankle while playing football. Underwent surgery successfully.",
+    "last_record_update": "2025-06-16T11:10:00Z"
+  },
+  {
+    "id": 374932,
+    "name": "Yara El-Masri",
+    "DOB": "1995-09-09",
+    "gender": "Female",
+    "blood_type": "AB-",
+    "address": "10 Sycamore Lane, Luton LU1 2AA",
+    "phone_number": "+44-7700-334455",
+    "allergies": ["NSAIDs"],
+    "chronic_conditions": ["Acid reflux"],
+    "current_medications": [
+      { "name": "Omeprazole", "dose": "20mg", "frequency": "Once daily" }
+    ],
+    "do_not_resuscitate": false,
+    "number_of_previous_visits": 6,
+    "number_of_previous_admissions": 2,
+    "date_of_last_admission": "2025-02-21",
+    "last_diagnosis": "Acid reflux",
+    "notes": "Presented with chest pains. ECG was normal. Diagnosed with acid reflux.",
+    "last_record_update": "2025-06-18T13:55:00Z"
+  }
+]

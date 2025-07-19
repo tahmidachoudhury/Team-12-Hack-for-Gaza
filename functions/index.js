@@ -52,8 +52,11 @@ const patients = [
   },
 ]
 
-// functions/index.js
+const admin = require("firebase-admin")
 const functions = require("firebase-functions")
+if (!admin.apps.length) {
+  admin.initializeApp()
+}
 
 /**
  * Dummy endpoint:
@@ -68,6 +71,64 @@ exports.getPatient = functions.https.onRequest((_req, res) => {
   //     allergy: "Penicillin",
   //   })
 })
+
+const db = admin.firestore()
+
+exports.partialSearchUsingFirestore = functions.https.onRequest(
+  async (req, res) => {
+    const queryName = req.query.name
+
+    if (!queryName) {
+      return res.status(400).json({ error: "Missing name query parameter" })
+    }
+
+    try {
+      // Firestore doesn't support native `startsWith`, so we use range queries
+      const start = queryName
+      const end = queryName + "\uf8ff" // highest UTF-8 char
+
+      const snapshot = await db
+        .collection("patients")
+        .where("name", ">=", start)
+        .where("name", "<=", end)
+        .get()
+
+      const results = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+
+      console.log(JSON.stringify(results))
+      res.json(results)
+    } catch (err) {
+      console.error("Error searching patients:", err)
+      res.status(500).json({ error: "Internal Server Error" })
+    }
+  }
+)
+
+exports.getPatientUsingFirestore = functions.https.onRequest(
+  async (req, res) => {
+    try {
+      const id = req.query.id
+
+      if (!id) {
+        return res.status(400).json({ error: "Missing patient ID" })
+      }
+
+      const doc = await db.collection("patients").doc(id).get()
+
+      if (!doc.exists) {
+        return res.status(404).json({ error: "Patient not found" })
+      }
+
+      res.json({ id: doc.id, ...doc.data() })
+    } catch (err) {
+      console.error("Error fetching patient:", err)
+      res.status(500).json({ error: "Internal Server Error" })
+    }
+  }
+)
 
 exports.partialSearchPatientName = functions.https.onRequest((_req, res) => {
   const filteredPatients = patients.filter((patient) =>
@@ -205,90 +266,6 @@ exports.searchPatientsByNameAndDOB = functions.https.onRequest(
     }
   }
 )
-
-exports.addPatient = functions.https.onRequest(async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed: use POST")
-  }
-
-  const {
-    id,
-    name,
-    dob,
-    address,
-    phone_number,
-    number_of_previous_visits,
-    number_of_previous_admissions,
-    patient_notes,
-    last_record_update,
-  } = req.body
-
-  // Basic validation
-  if (!name || !dob) {
-    return res.status(400).send('Missing required fields: "name" and "dob"')
-  }
-
-  try {
-    const newPatient = {
-      id,
-      name,
-      dob,
-      address: address || null,
-      phone_number: phone_number || null,
-      number_of_previous_visits: number_of_previous_visits || 0,
-      number_of_previous_admissions: number_of_previous_admissions || 0,
-      patient_notes: patient_notes || "",
-      last_record_update: last_record_update || new Date().toISOString(),
-    }
-
-    const docRef = await admin
-      .firestore()
-      .collection("patients")
-      .add(newPatient)
-    res
-      .status(201)
-      .json({ message: "Patient added successfully", id: docRef.id })
-  } catch (error) {
-    console.error("Error adding patient:", error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-exports.updatePatient = functions.https.onRequest(async (req, res) => {
-  if (req.method !== "POST") {
-    return res.status(405).send("Method Not Allowed: use POST")
-  }
-
-  const patientId = req.query.id || req.body.id
-  const updateData = req.body
-
-  if (!patientId) {
-    return res.status(400).send("Missing patient ID")
-  }
-
-  // Don't allow updating the ID field itself
-  delete updateData.id
-
-  // Add auto timestamp update if not provided
-  if (!updateData.last_record_update) {
-    updateData.last_record_update = new Date().toISOString()
-  }
-
-  try {
-    const docRef = admin.firestore().collection("patients").doc(patientId)
-    const doc = await docRef.get()
-
-    if (!doc.exists) {
-      return res.status(404).send("Patient not found")
-    }
-
-    await docRef.update(updateData)
-    res.status(200).json({ message: "Patient record updated", id: patientId })
-  } catch (error) {
-    console.error("Error updating patient:", error)
-    res.status(500).send("Internal Server Error")
-  }
-})
 
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
