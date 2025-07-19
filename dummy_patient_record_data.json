@@ -1,0 +1,35 @@
+[
+  {
+    "name": "John Doe",
+    "DOB": "1985-04-12",
+    "address": "123 Maple Street, Springfield, IL 62704",
+    "phone_number": "+1-312-555-0178",
+    "number_of_previous_visits": 5,
+    "number_of_previous_admissions": 2,
+    "date_of_last_admission": "2024-12-05",
+    "patient_notes": "Patient has a history of hypertension. Last visit was for routine check-up. No major complaints.",
+    "last_record_update": "2025-06-15T10:30:00Z"
+  },
+  {
+    "name": "Maria Gonzales",
+    "DOB": "1990-09-28",
+    "address": "789 Elm Avenue, Dallas, TX 75201",
+    "phone_number": "+1-972-555-0345",
+    "number_of_previous_visits": 12,
+    "number_of_previous_admissions": 1,
+    "date_of_last_admission": "2023-11-21",
+    "patient_notes": "Diagnosed with Type 2 Diabetes. Monitoring blood sugar levels. Prescribed Metformin.",
+    "last_record_update": "2025-07-01T14:15:00Z"
+  },
+  {
+    "name": "Samuel Lee",
+    "DOB": "1978-02-06",
+    "address": "456 Oak Blvd, San Francisco, CA 94102",
+    "phone_number": "+1-415-555-0890",
+    "number_of_previous_visits": 9,
+    "number_of_previous_admissions": 3,
+    "date_of_last_admission": "2025-03-18",
+    "patient_notes": "Patient recovering from knee surgery. Attending physical therapy sessions. Healing as expected.",
+    "last_record_update": "2025-07-18T09:45:00Z"
+  }
+]
