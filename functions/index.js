@@ -89,6 +89,122 @@ exports.listPatients = functions.https.onRequest((_req, res) => {
   ])
 })
 
+
+
+exports.searchPatientsByNameAndDOB = functions.https.onRequest(async (req, res) => {
+  const name = req.query.name
+  const dob = req.query.dob
+
+  if (!name || !dob) {
+    return res.status(400).send('Missing "name" or "dob" query parameters')
+  }
+
+  try {
+    const snapshot = await admin.firestore().collection('patients')
+      .where('name', '==', name)
+      .where('dob', '==', dob)
+      .get()
+
+    if (snapshot.empty) {
+      return res.status(404).send('No matching patients found')
+    }
+
+    const patients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    res.status(200).json(patients)
+  } catch (error) {
+    console.error("Error querying patients:", error)
+    res.status(500).send(error.message)
+  }
+})
+
+
+exports.addPatient = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed: use POST')
+  }
+
+  const {
+    id,
+    name,
+    dob,
+    address,
+    phone_number,
+    number_of_previous_visits,
+    number_of_previous_admissions,
+    patient_notes,
+    last_record_update,
+  } = req.body
+
+  // Basic validation
+  if (!name || !dob) {
+    return res.status(400).send('Missing required fields: "name" and "dob"')
+  }
+
+  try {
+    const newPatient = {
+      id,
+      name,
+      dob,
+      address: address || null,
+      phone_number: phone_number || null,
+      number_of_previous_visits: number_of_previous_visits || 0,
+      number_of_previous_admissions: number_of_previous_admissions || 0,
+      patient_notes: patient_notes || '',
+      last_record_update: last_record_update || new Date().toISOString(),
+    }
+
+    const docRef = await admin.firestore().collection('patients').add(newPatient)
+    res.status(201).json({ message: 'Patient added successfully', id: docRef.id })
+  } catch (error) {
+    console.error('Error adding patient:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
+
+exports.updatePatient = functions.https.onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed: use POST')
+  }
+
+  const patientId = req.query.id || req.body.id
+  const updateData = req.body
+
+  if (!patientId) {
+    return res.status(400).send('Missing patient ID')
+  }
+
+  // Don't allow updating the ID field itself
+  delete updateData.id
+
+  // Add auto timestamp update if not provided
+  if (!updateData.last_record_update) {
+    updateData.last_record_update = new Date().toISOString()
+  }
+
+  try {
+    const docRef = admin.firestore().collection('patients').doc(patientId)
+    const doc = await docRef.get()
+
+    if (!doc.exists) {
+      return res.status(404).send('Patient not found')
+    }
+
+    await docRef.update(updateData)
+    res.status(200).json({ message: 'Patient record updated', id: patientId })
+  } catch (error) {
+    console.error('Error updating patient:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
+
+
+
+
+
+
+
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
 // traffic spikes by instead downgrading performance. This limit is a
